@@ -21,9 +21,8 @@
 *  .timestamp_in_ms X died
 */
 
-#define NTHREADS 10
 
-pthread_mutex_t counter_mutex;
+
 
 typedef struct t_philo
 {
@@ -46,19 +45,20 @@ typedef struct t_philo
 
 } t_philo;
 
+pthread_mutex_t counter_mutex;
 
 // Function executed by each thread
-void *func1(int data)
+void *func1(void *data)
 {
-    int x = data;
+    char *x = (char *)data;
 
-    printf("%d is thinking...\n", x);
+    printf("%s is thinking...\n", x);
 
     pthread_mutex_lock(&counter_mutex);
-    printf("%d is eating...\n", x);
+    printf("%s is eating...\n", x);
     pthread_mutex_unlock(&counter_mutex);
 
-    printf("%d is sleeping...\n", x);
+    printf("%s is sleeping...\n", x);
 
     return NULL;
 }
@@ -74,7 +74,7 @@ int main(int argc, char **argv)
     for (int i = 1; i < argc; i++)
     {
         // Create thread and pass the address of names[i] as argument
-        if (pthread_create(&thread_id[i], NULL, func1, thread_id[i]) != 0)
+        if (pthread_create(&thread_id[i], NULL, func1, (void *)names[i]) != 0)
         {
             perror("pthread_create");
             exit(EXIT_FAILURE);
