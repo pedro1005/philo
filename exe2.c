@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include "philos.h"
 
 /*                  ***RULES***
 * n_forks = n_philos;
@@ -26,53 +27,22 @@
 *  .timestamp_in_ms X died
 */
 
-typedef struct t_philo
-{
-    int			id;         // philo's number [1, ..., n_philos]; 
-    long long	time_left;   // time left since last meal (milliseconds);
-    //double  time_eat;   // time it takes to eat;
-    //double  time_sleep; // time will spend sleeping;
-    //int     fork_own;       // innitially set to 1 (available);
-    //int     fork_right;     // innitially set to 0 (unavailable);
-    int     eating;     // if 1 -> is eating others states seted to zero;
-    int     sleeping;   // if 1 -> is sleeping others states seted to zero;
-    int     thinking;   // while not eating, they are thinking. if 1 -> is thinking others states seted to zero;
-    int     n_eat;      // number of times they have eaten
-    int     philo_dead; //if time_die == 0; philo_dead set to 1;
-    t_forks	*forks;
-} t_philo;
 
-typedef struct t_rules
-{
-	int	n_philos;
-	int	time_left;
-	int	time_to_eat;
-	int	time_to_sleep;
-	int	n_meals;
-} t_rules;
 
-typedef struct t_forks
-{
-	int	num_forks;
-	int	forks[];
-} t_forks;
-
-void	set_rules(char **argv, t_rules *rules)
+void	ft_set_rules(char **argv, t_rules *rules, long *forks)
 {
 	rules->n_philos = atoi(argv[1]);
+	ft_set_forks(forks, rules->n_philos);
 	rules->time_left = atoi(argv[2]);
 	rules->time_to_eat = atoi(argv[3]);
 	rules->time_to_sleep = atoi(argv[4]);
 	if (argv[5])
 		rules->n_meals = atoi(argv[5]);
+	rules->forks = forks;
+	rules->philo_id = 1;
 }
 
-void	print_rules(t_rules rules)
-{
-	printf("n_philos: %d\ntime_die: %d\ntime_eat: %d\ntime_sleep: %d\nn_meals: %d\n", rules.n_philos, rules.time_left, rules.time_to_eat, rules.time_to_sleep, rules.n_meals);
-}
-
-long long current_time_ms()
+long long ft_current_time_ms()
 {
     struct timeval tv;
 
@@ -80,29 +50,77 @@ long long current_time_ms()
     return (long long) tv.tv_sec * 1000 + (long long) tv.tv_usec / 1000;
 }
 
+void	ft_set_forks(long *forks, int philos) // fill *forks with 1
+{
+	long	mask;
+
+	mask = (1 << philos) - 1;
+	*forks |= mask;
+}
+
+void	ft_routine(t_rules *data)
+{
+    printf("Philo created with id: %ld\n", data->philo_id);
+}
+
+void	ft_create_philos(t_rules *rules)
+{
+    int				n_philos;
+    int				i;
+    pthread_mutex_t	mutex;
+
+    pthread_mutex_init(&mutex, NULL);
+    n_philos = rules->n_philos;
+    pthread_t	**philos;
+    i = 0;
+    philos = malloc(sizeof(pthread_t *) * n_philos);
+    while (i < n_philos)
+    {
+        philos[i] = malloc(sizeof(pthread_t));
+        if (pthread_create(philos[i], NULL, (void *(*)(void *))ft_routine, rules) != 0)
+            return ;
+        i++;
+    }
+    i = 0;
+    while (i < n_philos)
+    {
+        if (pthread_join(*philos[i], NULL) != 0)
+            return ;
+        free(philos[i]);
+        i++;
+    }
+    free(philos);
+}
+
 int main(int argc, char **argv)
 {
     t_rules	*rules;
-	t_philo *philo;
-
+	long	*forks;
+	//t_philo *philo;
 	rules = malloc(sizeof(t_rules));
-	philo = malloc(sizeof(t_philo));
+	forks = malloc(sizeof(long));
+	*forks = 0;
+	//ft_set_forks(forks, atoi(argv[1]));
+
+	//philo = malloc(sizeof(t_philo));
 
 	memset(rules, 0, sizeof(t_rules));
-	memset(philo, 0, sizeof(t_philo));
-	set_rules(argv, rules);
+	//memset(philo, 0, sizeof(t_philo));
+	ft_set_rules(argv, rules, forks);
+	ft_create_philos(rules);
 
-	long long time = current_time_ms();
+	//long long time = current_time_ms();
 
-	philo->time_left = time + rules->time_left;
+	/*philo->time_left = time + rules->time_left;
 	while (current_time_ms() < philo->time_left)
 	{
 		printf("philo alive at: %lld\n", current_time_ms());
 	}
-	printf("\nphilo died at: %lld\n", current_time_ms());
+	printf("\nphilo died at: %lld\n", current_time_ms());*/
 
 	free(rules);
-	free(philo);
+	free(forks);
+	//free(philo);
 	
 
 
