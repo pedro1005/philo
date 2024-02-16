@@ -4,7 +4,7 @@
 typedef struct t_philo
 {
     int			id;         // philo's number [1, ..., n_philos]; 
-    long long	time_left;   // time left since last meal (milliseconds);
+    long long	death_time;   // time(ms) philo die if not eat;
     //double  time_eat;   // time it takes to eat;
     //double  time_sleep; // time will spend sleeping;
     //int     fork_own;       // innitially set to 1 (available);

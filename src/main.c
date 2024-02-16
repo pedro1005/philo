@@ -70,8 +70,14 @@ void	*ft_routine(t_rules *data)
 	pthread_mutex_lock(&mutex);
 	id = data->philo_id++;
 	pthread_mutex_unlock(&mutex);
+	philo->death_time = ft_current_time_ms() + data->time_left;
 
-    printf("Philo created with id: %ld\n", id);
+	while (ft_current_time_ms() < philo->death_time)
+	{
+		printf("philo alive at: %lld\n", ft_current_time_ms());
+	}
+
+    printf("Philo with id ´%ld´ died!\n", id);
 	free(philo);
 
 	return (NULL);
