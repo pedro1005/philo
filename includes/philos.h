@@ -32,6 +32,6 @@ void		ft_set_forks(long *forks, int philos);
 void		ft_set_rules(char **argv, t_rules *rules, long *forks);
 long long	ft_current_time_ms();
 void		ft_create_philos(t_rules *rules);
-void		ft_routine(t_rules *data);
+void		*ft_routine(t_rules *data);
 
 #endif

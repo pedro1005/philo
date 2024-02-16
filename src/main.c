@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include "philos.h"
+#include "../includes/philos.h"
 
 /*                  ***RULES***
 * n_forks = n_philos;
@@ -47,7 +47,7 @@ long long ft_current_time_ms()
     struct timeval tv;
 
     gettimeofday(&tv, NULL);
-    return (long long) tv.tv_sec * 1000 + (long long) tv.tv_usec / 1000;
+    return (long long)tv.tv_sec * 1000 + (long long)tv.tv_usec / 1000;
 }
 
 void	ft_set_forks(long *forks, int philos) // fill *forks with 1
@@ -58,9 +58,23 @@ void	ft_set_forks(long *forks, int philos) // fill *forks with 1
 	*forks |= mask;
 }
 
-void	ft_routine(t_rules *data)
+void	*ft_routine(t_rules *data)
 {
-    printf("Philo created with id: %ld\n", data->philo_id);
+	long	id;
+	pthread_mutex_t	mutex;
+	t_philo *philo;
+
+	philo = malloc(sizeof(t_philo));
+	memset(philo, 0, sizeof(t_philo));
+	pthread_mutex_init(&mutex, NULL);
+	pthread_mutex_lock(&mutex);
+	id = data->philo_id++;
+	pthread_mutex_unlock(&mutex);
+
+    printf("Philo created with id: %ld\n", id);
+	free(philo);
+
+	return (NULL);
 }
 
 void	ft_create_philos(t_rules *rules)
@@ -68,16 +82,16 @@ void	ft_create_philos(t_rules *rules)
     int				n_philos;
     int				i;
     pthread_mutex_t	mutex;
+	pthread_t	**philos;
 
     pthread_mutex_init(&mutex, NULL);
     n_philos = rules->n_philos;
-    pthread_t	**philos;
     i = 0;
     philos = malloc(sizeof(pthread_t *) * n_philos);
     while (i < n_philos)
     {
         philos[i] = malloc(sizeof(pthread_t));
-        if (pthread_create(philos[i], NULL, (void *(*)(void *))ft_routine, rules) != 0)
+        if (pthread_create(philos[i], NULL, (void *)ft_routine, rules) != 0)
             return ;
         i++;
     }
@@ -94,6 +108,8 @@ void	ft_create_philos(t_rules *rules)
 
 int main(int argc, char **argv)
 {
+	if (argc < 5 || argc > 6)
+	    return (0);
     t_rules	*rules;
 	long	*forks;
 	//t_philo *philo;
