@@ -19,7 +19,7 @@ OBJ_PATH = objs
 HEADER = includes
 SRC_PATH = src
 
-SOURCES = main.c
+SOURCES = main.c bitwise.c utils.c init.c states.c
 
 SRCS := $(addprefix $(SRC_PATH)/,$(SOURCES))
 OBJS := $(addprefix $(OBJ_PATH)/,$(SOURCES:.c=.o))
