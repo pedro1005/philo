@@ -2,17 +2,24 @@
 
 void	ft_set_rules(char **argv, t_rules *rules)
 {
-	rules->n_philos = atoi(argv[1]);
+    struct timeval	tv;
+
+    gettimeofday(&tv, NULL);
+    rules->time_init = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	rules->n_philos = (long)atoi(argv[1]);
 	rules->death_time = (time_t)atoi(argv[2]);
 	rules->time_to_eat = (time_t)atoi(argv[3]);
 	rules->time_to_sleep = (time_t)atoi(argv[4]);
 	if (argv[5])
-		rules->n_meals = atoi(argv[5]);
+		rules->n_meals = (long)atoi(argv[5]);
 	rules->forks = malloc(sizeof(long));
+    rules->philos = malloc(sizeof(pthread_t *) * rules->n_philos);
     ft_set_forks(rules->forks, rules->n_philos);
 	rules->philo_id = 1;
     rules->mutex = malloc(sizeof(pthread_mutex_t));
+    rules->mutex_print = malloc(sizeof(pthread_mutex_t));
     pthread_mutex_init(rules->mutex, NULL);
+    pthread_mutex_init(rules->mutex_print, NULL);
 }
 
 void	ft_set_forks(long *forks, int pos) // fill *forks with 1
@@ -27,26 +34,23 @@ void	ft_create_philos(t_rules *rules)
 {
     int				n_philos;
     int				i;
-	pthread_t	**philos;
 
     n_philos = rules->n_philos;
     i = 0;
-    philos = malloc(sizeof(pthread_t *) * n_philos);
     while (i < n_philos)
     {
-        philos[i] = malloc(sizeof(pthread_t));
-        if (pthread_create(philos[i], NULL, (void *)ft_routine, rules) != 0)
+        rules->philos[i] = malloc(sizeof(pthread_t));
+        if (pthread_create(rules->philos[i], NULL, (void *)ft_routine, rules) != 0)
             return ;
         i++;
     }
-    rules->philos = philos;
     i = 0;
     while (i < n_philos)
     {
-        if (pthread_join(*philos[i], NULL) != 0)
+        if (pthread_join(*rules->philos[i], NULL) != 0)
             return ;
-        free(philos[i]);
+        free(rules->philos[i]);
         i++;
     }
-    free(philos);
+    free(rules->philos);
 }

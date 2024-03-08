@@ -22,29 +22,31 @@ typedef struct t_philo
 
 typedef struct t_rules
 {
-	int		        n_philos;
+	long		    n_philos;
 	time_t          death_time;
 	time_t		    time_to_eat;
 	time_t		    time_to_sleep;
-	time_t		    n_meals;
+    time_t          time_init;
+	long		    n_meals;
 	long            philo_id;
 	long            *forks;
     pthread_t	    **philos;
     pthread_mutex_t *mutex;
+    pthread_mutex_t *mutex_print;
 } t_rules;
 
 void		ft_set_forks(long *forks, int pos);
 void		ft_set_rules(char **argv, t_rules *rules);
-time_t      ft_current_time_ms();
+time_t      ft_current_time_ms(t_rules *rules);
 void		ft_create_philos(t_rules *rules);
 void		*ft_routine(t_rules *data);
-void	    ft_philo_think(t_philo *philo);
+void	    ft_philo_think(t_philo *philo, t_rules *rules);
 void        ft_get_forks(t_philo *philo, t_rules *rules);
 int         ft_get_bit(long number, int pos);
 void        ft_clear_bit(long *num, int pos);
 void	    ft_eat(t_rules *rules, t_philo * philo);
-void	    *ft_routine(t_rules *data);
 void        ft_open_bit(long *num, int pos);
 void	    ft_parse_args(int argc, char **argv);
+void	    ft_check_numbers(char **argv);
 
 #endif

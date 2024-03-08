@@ -31,27 +31,18 @@ void	*ft_routine(t_rules *data)
 	pthread_mutex_lock(data->mutex);
 	philo->id = data->philo_id++;
 	pthread_mutex_unlock(data->mutex);
-	philo->death_time = ft_current_time_ms() + data->death_time;
+	philo->death_time = ft_current_time_ms(data) + data->death_time;
 	while (1)
 	{
-		ft_philo_think(philo);
+		ft_philo_think(philo, data);
 		ft_get_forks(philo, data);
 		ft_eat(data, philo);
 	}
-    printf("%ld %d died\n", ft_current_time_ms(), philo->id);
+    printf("%ld %d died\n", ft_current_time_ms(data), philo->id);
 	free(philo);
 	pthread_mutex_destroy(data->mutex);
 	free(data->mutex);
 	return (NULL);
-}
-
-void	ft_parse_args(int argc, char **argv)
-{
-	if (argc < 5 || argc > 6 || argv == NULL)
-	{
-		write(2, "Invalid args\n", 14);
-		exit(0);
-	}
 }
 
 int main(int argc, char **argv)
