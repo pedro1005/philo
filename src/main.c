@@ -30,18 +30,19 @@ void	*ft_routine(t_rules *data)
 	memset(philo, 0, sizeof(t_philo));
 	pthread_mutex_lock(data->mutex);
 	philo->id = data->philo_id++;
+	data->t_philos[philo->id - 1] = philo;
 	pthread_mutex_unlock(data->mutex);
+	while (data->philo_id < data->n_philos)
+		usleep(0);
 	philo->death_time = ft_current_time_ms(data) + data->death_time;
-	while (1)
+	while (!data->philo_dead)
 	{
-		ft_philo_think(philo, data);
 		ft_get_forks(philo, data);
 		ft_eat(data, philo);
+		ft_philo_sleep(philo, data);
+		ft_philo_think(philo, data);
 	}
-    printf("%ld %d died\n", ft_current_time_ms(data), philo->id);
 	free(philo);
-	pthread_mutex_destroy(data->mutex);
-	free(data->mutex);
 	return (NULL);
 }
 
@@ -55,6 +56,12 @@ int main(int argc, char **argv)
 	ft_set_rules(argv, rules);
 	ft_create_philos(rules);
 	free(rules->forks);
+	pthread_mutex_destroy(rules->mutex);
+	pthread_mutex_destroy(rules->mutex_print);
+	free(rules->mutex);
+	free(rules->mutex_print);
+	free(rules->t_philos);
+	free(rules->philos);
 	free(rules);
     return (0);
 }

@@ -1,6 +1,6 @@
 #include "../includes/philos.h"
 
-time_t ft_current_time_ms(t_rules *rules)
+time_t	ft_current_time_ms(t_rules *rules)
 {
     struct timeval	tv;
 	time_t			current_time;
@@ -45,47 +45,61 @@ void	ft_parse_args(int argc, char **argv)
 
 void	ft_get_forks(t_philo *philo, t_rules *rules)
 {
-	while (!philo->forks_own)
+	while (!philo->forks_own && !rules->philo_dead)
 	{
 		if (philo->id < rules->n_philos)
 		{
 			pthread_mutex_lock(rules->mutex);
-			if (ft_get_bit(*rules->forks, philo->id) && ft_get_bit(*rules->forks, (philo->id) + 1))
+			if (ft_check_fork(rules->forks, philo->id) && ft_check_fork(rules->forks, (philo->id) + 1))
 			{
 				philo->forks_own = 1;
-				ft_clear_bit(rules->forks, philo->id);
+				ft_set_fork(rules->forks, philo->id, 0);
+				pthread_mutex_lock(rules->mutex_print);
 				printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
-				ft_clear_bit(rules->forks, (philo->id) + 1);
+				ft_set_fork(rules->forks, philo->id + 1, 0);
 				printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
+				pthread_mutex_unlock(rules->mutex_print);
 			}
 			pthread_mutex_unlock(rules->mutex);
-			if (philo->death_time <= ft_current_time_ms(rules))
+			pthread_mutex_lock(rules->mutex);
+			if ((philo->death_time <= ft_current_time_ms(rules)) && !rules->philo_dead)
 			{
 				pthread_mutex_lock(rules->mutex_print);
 				printf("%ld %d died\n",ft_current_time_ms(rules), philo->id);
-				//pthread_mutex_unlock(rules->mutex_print);
-				exit(0);
+				pthread_mutex_unlock(rules->mutex_print);
+				pthread_mutex_lock(&rules->mutex_dead);
+				rules->philo_dead = 1;
+				pthread_mutex_unlock(&rules->mutex_dead);
+				pthread_mutex_unlock(rules->mutex);
+				return ;
 			}
+			pthread_mutex_unlock(rules->mutex);
 		}
-		else if (philo->id == rules->n_philos)
+		if (philo->id == rules->n_philos)
 		{
 			pthread_mutex_lock(rules->mutex);
-			if (ft_get_bit(*rules->forks, philo->id) && ft_get_bit(*rules->forks, 1))
+			if (ft_check_fork(rules->forks, philo->id) && ft_check_fork(rules->forks, 1))
 			{
 				philo->forks_own = 1;
-				ft_clear_bit(rules->forks, philo->id);
+				ft_set_fork(rules->forks, philo->id, 0);
+				pthread_mutex_lock(rules->mutex_print);
 				printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
-				ft_clear_bit(rules->forks, 1);
+				ft_set_fork(rules->forks, 1, 0);
 				printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
+				pthread_mutex_unlock(rules->mutex_print);
 			}
 			pthread_mutex_unlock(rules->mutex);
-			if (philo->death_time <= ft_current_time_ms(rules))
+			pthread_mutex_lock(rules->mutex);
+			if ((philo->death_time <= ft_current_time_ms(rules)) && !rules->philo_dead)
 			{
-				pthread_mutex_lock(rules->mutex_print);
 				printf("%ld %d died\n",ft_current_time_ms(rules), philo->id);
-				//pthread_mutex_unlock(rules->mutex_print);
-				exit(0);
+				pthread_mutex_lock(&rules->mutex_dead);
+				rules->philo_dead = 1;
+				pthread_mutex_unlock(&rules->mutex_dead);
+				pthread_mutex_unlock(rules->mutex);
+				return ;
 			}
+			pthread_mutex_unlock(rules->mutex);
 		}
 	}
 }
