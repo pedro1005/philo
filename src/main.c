@@ -24,13 +24,15 @@
 
 int	ft_check_end(t_rules *rules)
 {
-	pthread_mutex_lock(&rules->mutex_dead);
-	if (rules->philo_dead || rules->philos_eaten)
+	if (!rules)
+		return (1);
+	pthread_mutex_lock(rules->mutex);
+	if (rules->stop_demo || ft_check_meals(rules))
 	{
-		pthread_mutex_unlock(&rules->mutex_dead);
+		pthread_mutex_unlock(rules->mutex);
 		return (1);
 	}
-	pthread_mutex_unlock(&rules->mutex_dead);
+	pthread_mutex_unlock(rules->mutex);
 	return (0);
 }
 

@@ -27,6 +27,7 @@ typedef struct t_rules
 	int             n_philos;
     int             philo_dead;
     int             philos_eaten;
+    int             stop_demo;
 	time_t          death_time;
 	time_t		    time_to_eat;
 	time_t		    time_to_sleep;
