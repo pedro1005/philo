@@ -22,33 +22,33 @@ void	ft_philo_think(t_philo *philo, t_rules *rules)
 
 void	ft_eat(t_rules *rules, t_philo * philo)
 {
+	time_t	eating;
+
 	if (!rules || !philo || rules->philo_dead || rules->philos_eaten)
 		return ;
 	philo->death_time = ft_current_time_ms(rules) + rules->death_time;
+	eating = ft_current_time_ms(rules) + rules->time_to_eat;
 	pthread_mutex_lock(rules->mutex_print);
 	printf("%ld %d is eating\n", ft_current_time_ms(rules), philo->id);
 	pthread_mutex_unlock(rules->mutex_print);
-	usleep(rules->time_to_eat * 1000);
-	pthread_mutex_lock(rules->mutex);
+	while (!ft_check_end(rules) && ft_current_time_ms(rules) <= eating)
+	{
+		usleep(10);
+		if (ft_check_philo_dead(philo, rules))
+		{
+			pthread_mutex_lock(&rules->mutex_dead);
+			rules->philo_dead = 1;
+			pthread_mutex_unlock(&rules->mutex_dead);
+			printf("%ld %d is dead\n", ft_current_time_ms(rules), philo->id);
+			return ;
+		}
+	}
 	philo->n_meals++;
-	pthread_mutex_unlock(rules->mutex);
-	if (philo->id != rules->n_philos)
-	{
-		pthread_mutex_lock(&rules->mutex_forks[philo->id]);
-		pthread_mutex_lock(&rules->mutex_forks[philo->id - 1]);
-		ft_set_fork(rules->forks, philo->id, 1);
-		ft_set_fork(rules->forks, philo->id + 1, 1);
-		pthread_mutex_unlock(&rules->mutex_forks[philo->id]);
-		pthread_mutex_unlock(&rules->mutex_forks[philo->id - 1]);
-	}
-	else if (philo->id == rules->n_philos)
-	{
-		pthread_mutex_lock(&rules->mutex_forks[0]);
-		pthread_mutex_lock(&rules->mutex_forks[philo->id - 1]);
-		ft_set_fork(rules->forks, philo->id, 1);
-		ft_set_fork(rules->forks, 1, 1);
-		pthread_mutex_unlock(&rules->mutex_forks[0]);
-		pthread_mutex_unlock(&rules->mutex_forks[philo->id - 1]);	
-	}
+	pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
+	rules->forks[philo->fork_l_pos] = 1;
+	pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
+	pthread_mutex_lock(&rules->mutex_forks[philo->fork_r_pos]);
+	rules->forks[philo->fork_r_pos] = 1;
+	pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
 	philo->forks_own = 0;
 }

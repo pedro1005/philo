@@ -18,6 +18,8 @@ typedef struct t_philo
     int     thinking;   // while not eating, they are thinking. if 1 -> is thinking others states seted to zero;
     long    n_meals;      // number of times they have eaten
     int     philo_dead; //if time_die == 0; philo_dead set to 1;
+    int     fork_l_pos;
+    int     fork_r_pos;
 } t_philo;
 
 typedef struct t_rules
@@ -30,7 +32,7 @@ typedef struct t_rules
 	time_t		    time_to_sleep;
     time_t          time_init;
 	long		    n_meals;
-	int             philo_id;
+	int             philo_created;
 	int             *forks;
     pthread_t	    **philos;
     pthread_mutex_t *mutex;
@@ -56,5 +58,6 @@ void        ft_set_fork(int *forks,int pos, int state);
 void	    ft_philo_sleep(t_philo *philo, t_rules *rules);
 int		    ft_check_meals(t_rules *rules);
 int         ft_check_end(t_rules *rules);
+int	        ft_check_philo_dead(t_philo *philo, t_rules *rules);
 
 #endif

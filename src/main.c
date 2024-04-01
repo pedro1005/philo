@@ -24,13 +24,13 @@
 
 int	ft_check_end(t_rules *rules)
 {
-	pthread_mutex_lock(rules->mutex);
+	pthread_mutex_lock(&rules->mutex_dead);
 	if (rules->philo_dead || rules->philos_eaten)
 	{
-		pthread_mutex_unlock(rules->mutex);
+		pthread_mutex_unlock(&rules->mutex_dead);
 		return (1);
 	}
-	pthread_mutex_unlock(rules->mutex);
+	pthread_mutex_unlock(&rules->mutex_dead);
 	return (0);
 }
 
@@ -41,10 +41,13 @@ void	*ft_routine(t_rules *data)
 	philo = malloc(sizeof(t_philo));
 	memset(philo, 0, sizeof(t_philo));
 	pthread_mutex_lock(data->mutex);
-	philo->id = data->philo_id++;
+	philo->id = data->philo_created++;
 	data->t_philos[philo->id - 1] = philo;
 	pthread_mutex_unlock(data->mutex);
-	while (data->philo_id < data->n_philos)							//sync threads
+	philo->fork_l_pos = philo->id - 1;
+	if (philo->id != data->n_philos)
+		philo->fork_r_pos = philo->id;
+	while (data->philo_created < data->n_philos)							//sync threads
 		usleep(10);
 	philo->death_time = ft_current_time_ms(data) + data->death_time;
 	while (1)

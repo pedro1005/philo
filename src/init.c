@@ -18,7 +18,7 @@ void	ft_set_rules(char **argv, t_rules *rules)
     rules->philos = malloc(sizeof(pthread_t *) * rules->n_philos);
     rules->t_philos = malloc(sizeof(t_philo *) * rules->n_philos);
     ft_init_forks(rules->forks, rules->n_philos);
-	rules->philo_id = 1;
+	rules->philo_created = 1;
     rules->mutex = malloc(sizeof(pthread_mutex_t));
     rules->mutex_print = malloc(sizeof(pthread_mutex_t));
     rules->mutex_forks = malloc(sizeof(pthread_mutex_t) * rules->n_philos);
