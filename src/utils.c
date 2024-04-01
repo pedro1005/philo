@@ -74,7 +74,8 @@ void	ft_get_forks(t_philo *philo, t_rules *rules)
 		{
 			rules->forks[philo->fork_l_pos] = 0;
 			pthread_mutex_lock(rules->mutex_print);
-			printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
+			if (!rules->stop_demo)
+				printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
 			pthread_mutex_unlock(rules->mutex_print);
 			pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
 			while (!philo->forks_own && !ft_check_end(rules) && !ft_check_philo_dead(philo, rules))
@@ -84,7 +85,8 @@ void	ft_get_forks(t_philo *philo, t_rules *rules)
 				{
 					rules->forks[philo->fork_r_pos] = 0;
 					pthread_mutex_lock(rules->mutex_print);
-					printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
+					if (!rules->stop_demo)
+						printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
 					pthread_mutex_unlock(rules->mutex_print);
 					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
 					philo->forks_own = 1;
@@ -115,7 +117,6 @@ int		ft_check_meals(t_rules *rules)
 	}
 	if (j == rules->n_philos)
 	{
-		pthread_mutex_unlock(rules->mutex);
 		pthread_mutex_lock(rules->mutex);
 		if (rules->stop_demo == 0)
 		{

@@ -27,7 +27,7 @@ int	ft_check_end(t_rules *rules)
 	if (!rules)
 		return (1);
 	pthread_mutex_lock(rules->mutex);
-	if (rules->stop_demo || ft_check_meals(rules))
+	if (rules->stop_demo)
 	{
 		pthread_mutex_unlock(rules->mutex);
 		return (1);
