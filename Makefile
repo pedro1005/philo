@@ -13,7 +13,7 @@
 CC = cc -pthread
 CFLAGS = -Wall -Wextra -Werror
 
-NAME = philosophers
+NAME = philo
 
 OBJ_PATH = objs
 HEADER = includes

@@ -38,20 +38,32 @@ int	ft_check_end(t_rules *rules)
 
 void	*ft_routine(t_rules *data)
 {
+	pthread_mutex_lock(data->mutex);
 	t_philo *philo;
+	int		n_philos;
 
 	philo = malloc(sizeof(t_philo));
 	memset(philo, 0, sizeof(t_philo));
-	pthread_mutex_lock(data->mutex);
+	
 	philo->id = data->philo_created++;
 	data->t_philos[philo->id - 1] = philo;
+	n_philos = data->n_philos;
+	philo->death_time = ft_current_time_ms(data) + data->death_time;
 	pthread_mutex_unlock(data->mutex);
 	philo->fork_l_pos = philo->id - 1;
-	if (philo->id != data->n_philos)
+	if (philo->id != n_philos)
 		philo->fork_r_pos = philo->id;
-	while (data->philo_created < data->n_philos)							//sync threads
-		usleep(10);
-	philo->death_time = ft_current_time_ms(data) + data->death_time;
+	/*while (1)
+	{
+		pthread_mutex_lock(data->mutex);
+		if (data->philo_created >= n_philos)
+		{
+			pthread_mutex_unlock(data->mutex);
+			break ;
+		}
+		pthread_mutex_unlock(data->mutex);							//sync threads
+		usleep(500);
+	}*/
 	while (1)
 	{
 		ft_get_forks(philo, data);

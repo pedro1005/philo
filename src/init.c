@@ -13,7 +13,11 @@ void	ft_set_rules(char **argv, t_rules *rules)
 	rules->time_to_eat = (time_t)atoi(argv[3]);
 	rules->time_to_sleep = (time_t)atoi(argv[4]);
 	if (argv[5])
+    {
 		rules->n_meals = (long)atoi(argv[5]);
+        if (rules->n_meals <= 0)
+            rules->stop_demo = 1;
+    }
 	rules->forks = malloc(sizeof(int) * rules->n_philos);
     rules->philos = malloc(sizeof(pthread_t *) * rules->n_philos);
     rules->t_philos = malloc(sizeof(t_philo *) * rules->n_philos);

@@ -4,10 +4,12 @@ time_t	ft_current_time_ms(t_rules *rules)
 {
     struct timeval	tv;
 	time_t			current_time;
+	time_t			result;
 
     gettimeofday(&tv, NULL);
 	current_time = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-    return (current_time - rules->time_init);
+	result = current_time - rules->time_init;
+    return (result);
 }
 
 void	ft_check_numbers(char **argv)
@@ -45,36 +47,41 @@ void	ft_parse_args(int argc, char **argv)
 
 int	ft_check_philo_dead(t_philo *philo, t_rules *rules)
 {
+	if (!philo || !rules)
+		return (1);
+	pthread_mutex_lock(rules->mutex);
 	if (ft_current_time_ms(rules) >= philo->death_time)
 	{
-		pthread_mutex_lock(rules->mutex);
 		if (rules->stop_demo)
 		{
 			pthread_mutex_unlock(rules->mutex);
 			return (1);
 		}
 		rules->stop_demo = 1;
+		pthread_mutex_unlock(rules->mutex);
 		pthread_mutex_lock(rules->mutex_print);
 		printf("%ld %d died\n", ft_current_time_ms(rules), philo->id);
 		pthread_mutex_unlock(rules->mutex_print);
-		pthread_mutex_unlock(rules->mutex);
 		return (1);
 	}
+	pthread_mutex_unlock(rules->mutex);
 	return (0);
 }
 
 void	ft_get_forks(t_philo *philo, t_rules *rules)
 {
+	if (!rules || !philo)
+		return ;
 	while (!philo->forks_own && !ft_check_end(rules) && !ft_check_philo_dead(philo, rules))
 	{
-		if (philo->id % 2)			//avoid data race
-			usleep(100);
+		if (philo->id % 2 == 0)
+			usleep(5000);
 		pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
 		if (rules->forks[philo->fork_l_pos])
 		{
 			rules->forks[philo->fork_l_pos] = 0;
 			pthread_mutex_lock(rules->mutex_print);
-			if (!rules->stop_demo)
+			if (!ft_check_end(rules))
 				printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
 			pthread_mutex_unlock(rules->mutex_print);
 			pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
@@ -85,7 +92,7 @@ void	ft_get_forks(t_philo *philo, t_rules *rules)
 				{
 					rules->forks[philo->fork_r_pos] = 0;
 					pthread_mutex_lock(rules->mutex_print);
-					if (!rules->stop_demo)
+					if (!ft_check_end(rules))
 						printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
 					pthread_mutex_unlock(rules->mutex_print);
 					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
@@ -104,6 +111,8 @@ int		ft_check_meals(t_rules *rules)
 {
 	if (!rules || !rules->t_philos || rules->stop_demo)
 		return (1);
+	else if (!rules->n_meals)
+		return (0);
 	int	i;
 	int	j;
 
@@ -117,7 +126,7 @@ int		ft_check_meals(t_rules *rules)
 	}
 	if (j == rules->n_philos)
 	{
-		pthread_mutex_lock(rules->mutex);
+		//pthread_mutex_lock(rules->mutex);
 		if (rules->stop_demo == 0)
 		{
 			pthread_mutex_lock(rules->mutex_print);
@@ -125,7 +134,7 @@ int		ft_check_meals(t_rules *rules)
 			pthread_mutex_unlock(rules->mutex_print);
 		}
 		rules->stop_demo = 1;
-		pthread_mutex_unlock(rules->mutex);
+		//pthread_mutex_unlock(rules->mutex);
 		return (1);
 	}
 	return (0);
