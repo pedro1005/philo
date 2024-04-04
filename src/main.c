@@ -53,7 +53,7 @@ void	*ft_routine(t_rules *data)
 	philo->fork_l_pos = philo->id - 1;
 	if (philo->id != n_philos)
 		philo->fork_r_pos = philo->id;
-	/*while (1)
+	while (1)
 	{
 		pthread_mutex_lock(data->mutex);
 		if (data->philo_created >= n_philos)
@@ -62,8 +62,8 @@ void	*ft_routine(t_rules *data)
 			break ;
 		}
 		pthread_mutex_unlock(data->mutex);							//sync threads
-		usleep(500);
-	}*/
+	}
+	//printf("%ld %d is at table\n", ft_current_time_ms(data), philo->id);
 	while (1)
 	{
 		ft_get_forks(philo, data);

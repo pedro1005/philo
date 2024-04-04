@@ -52,11 +52,11 @@ int	ft_check_philo_dead(t_philo *philo, t_rules *rules)
 	pthread_mutex_lock(rules->mutex);
 	if (ft_current_time_ms(rules) >= philo->death_time)
 	{
-		if (rules->stop_demo)
-		{
-			pthread_mutex_unlock(rules->mutex);
-			return (1);
-		}
+		//if (rules->stop_demo)
+		//{
+		//	pthread_mutex_unlock(rules->mutex);
+		//	return (1);
+		//}
 		rules->stop_demo = 1;
 		pthread_mutex_unlock(rules->mutex);
 		pthread_mutex_lock(rules->mutex_print);
@@ -75,14 +75,14 @@ void	ft_get_forks(t_philo *philo, t_rules *rules)
 	while (!philo->forks_own && !ft_check_end(rules) && !ft_check_philo_dead(philo, rules))
 	{
 		if (philo->id % 2 == 0)
-			usleep(5000);
+			usleep(10000);
 		pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
 		if (rules->forks[philo->fork_l_pos])
 		{
 			rules->forks[philo->fork_l_pos] = 0;
 			pthread_mutex_lock(rules->mutex_print);
 			if (!ft_check_end(rules))
-				printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
+				printf("%ld %d has taken a fork %d\n", ft_current_time_ms(rules), philo->id, philo->fork_l_pos);
 			pthread_mutex_unlock(rules->mutex_print);
 			pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
 			while (!philo->forks_own && !ft_check_end(rules) && !ft_check_philo_dead(philo, rules))
@@ -93,13 +93,17 @@ void	ft_get_forks(t_philo *philo, t_rules *rules)
 					rules->forks[philo->fork_r_pos] = 0;
 					pthread_mutex_lock(rules->mutex_print);
 					if (!ft_check_end(rules))
-						printf("%ld %d has taken a fork\n", ft_current_time_ms(rules), philo->id);
+						printf("%ld %d has taken a fork %d\n", ft_current_time_ms(rules), philo->id, philo->fork_r_pos);
 					pthread_mutex_unlock(rules->mutex_print);
 					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
 					philo->forks_own = 1;
 				}
 				else
+				{
 					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
+					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]); //????
+					break ;
+				}
 			}
 		}
 		else
@@ -120,13 +124,15 @@ int		ft_check_meals(t_rules *rules)
 	j = 0;
 	while (i >= 0)
 	{
+		pthread_mutex_lock(rules->mutex);
 		if (rules->t_philos[i] && rules->t_philos[i]->n_meals >= rules->n_meals)
 			j++;
+		pthread_mutex_unlock(rules->mutex);
 		i--;
 	}
-	if (j == rules->n_philos)
+	if (j >= rules->n_philos)
 	{
-		//pthread_mutex_lock(rules->mutex);
+		pthread_mutex_lock(rules->mutex);
 		if (rules->stop_demo == 0)
 		{
 			pthread_mutex_lock(rules->mutex_print);
@@ -134,7 +140,7 @@ int		ft_check_meals(t_rules *rules)
 			pthread_mutex_unlock(rules->mutex_print);
 		}
 		rules->stop_demo = 1;
-		//pthread_mutex_unlock(rules->mutex);
+		pthread_mutex_unlock(rules->mutex);
 		return (1);
 	}
 	return (0);
