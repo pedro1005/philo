@@ -18,13 +18,12 @@ void	ft_set_rules(char **argv, t_rules *rules)
         if (rules->n_meals <= 0)
             rules->stop_demo = 1;
     }
-	rules->forks = (int *)malloc(sizeof(int) * rules->n_philos);
+    else
+        rules->no_count_meal = 1;
+    rules->forks = (int *)malloc(sizeof(int) * rules->n_philos);
     rules->philos = (pthread_t **)malloc(sizeof(pthread_t*) * rules->n_philos);
     rules->t_philos = (t_philo **)malloc(sizeof(t_philo*) * rules->n_philos);
     ft_init_forks(rules->forks, rules->n_philos);
-	//rules->philo_created = 1;
-    //rules->mutex = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
-    //rules->mutex_print = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t));
     rules->mutex_forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * rules->n_philos);
     pthread_mutex_init(&rules->mutex, NULL);
     pthread_mutex_init(&rules->mutex_print, NULL);
@@ -66,13 +65,6 @@ void	ft_create_philos(t_rules *rules)
         i++;
     }
     i = 0;
-    /*while (i < n_philos)
-    {
-        if (pthread_detach(*rules->philos[i]) != 0)
-            return ;
-        i++;
-    }
-    i = 0;*/
     while (i < n_philos)
         free(rules->philos[i++]);
 }
