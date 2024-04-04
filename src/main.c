@@ -1,4 +1,3 @@
-
 #include "../includes/philos.h"
 
 /*                  ***RULES***
@@ -26,51 +25,52 @@ int	ft_check_end(t_rules *rules)
 {
 	if (!rules)
 		return (1);
-	pthread_mutex_lock(rules->mutex);
+	pthread_mutex_lock(&rules->mutex);
 	if (rules->stop_demo)
 	{
-		pthread_mutex_unlock(rules->mutex);
+		pthread_mutex_unlock(&rules->mutex);
 		return (1);
 	}
-	pthread_mutex_unlock(rules->mutex);
+	pthread_mutex_unlock(&rules->mutex);
 	return (0);
 }
 
 void	*ft_routine(t_rules *data)
 {
-	pthread_mutex_lock(data->mutex);
 	t_philo *philo;
-	int		n_philos;
 
 	philo = malloc(sizeof(t_philo));
 	memset(philo, 0, sizeof(t_philo));
-	
-	philo->id = data->philo_created++;
+	pthread_mutex_lock(&data->mutex);
+	data->philo_created++;
+	philo->id = data->philo_created;
 	data->t_philos[philo->id - 1] = philo;
-	n_philos = data->n_philos;
-	philo->death_time = ft_current_time_ms(data) + data->death_time;
-	pthread_mutex_unlock(data->mutex);
+	pthread_mutex_unlock(&data->mutex);
 	philo->fork_l_pos = philo->id - 1;
-	if (philo->id != n_philos)
+	if (philo->id != data->n_philos)
 		philo->fork_r_pos = philo->id;
 	while (1)
 	{
-		pthread_mutex_lock(data->mutex);
-		if (data->philo_created >= n_philos)
+		pthread_mutex_lock(&data->mutex);
+		if (data->philo_created >= data->n_philos)
 		{
-			pthread_mutex_unlock(data->mutex);
+			pthread_mutex_unlock(&data->mutex);
 			break ;
+		}				                               //sync threads
+		else
+		{
+			pthread_mutex_unlock(&data->mutex);
+			usleep(10);
 		}
-		pthread_mutex_unlock(data->mutex);							//sync threads
 	}
-	//printf("%ld %d is at table\n", ft_current_time_ms(data), philo->id);
+	philo->death_time = ft_current_time_ms(data) + data->death_time;
 	while (1)
 	{
-		ft_get_forks(philo, data);
-		ft_eat(data, philo);
+		//ft_get_forks(philo, data);
+		//ft_eat(data, philo);
 		ft_philo_sleep(philo, data);
 		ft_philo_think(philo, data);
-		if (ft_check_end(data))
+		if (ft_check_end(data) || ft_check_philo_dead(philo, data))
 			break ;
 	}
 	free(philo);
@@ -88,10 +88,10 @@ int main(int argc, char **argv)
 	//printf("n_meals = %ld\n", rules->n_meals);
 	ft_create_philos(rules);
 	free(rules->forks);
-	pthread_mutex_destroy(rules->mutex);
-	pthread_mutex_destroy(rules->mutex_print);
-	free(rules->mutex);
-	free(rules->mutex_print);
+	pthread_mutex_destroy(&rules->mutex);
+	pthread_mutex_destroy(&rules->mutex_print);
+	//free(rules->mutex);
+	//free(rules->mutex_print);
 	free(rules->t_philos);
 	free(rules->philos);
 	free(rules->mutex_forks);
