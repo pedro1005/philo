@@ -64,14 +64,12 @@ void	*ft_routine(t_rules *data)
 		}
 	}
 	philo->death_time = ft_current_time_ms(data) + data->death_time;
-	while (1)
+	while (!ft_check_end(data) && !ft_check_philo_dead(philo, data))
 	{
 		ft_get_forks(philo, data);
 		ft_eat(data, philo);
 		ft_philo_sleep(philo, data);
 		ft_philo_think(philo, data);
-		if (ft_check_end(data) || ft_check_philo_dead(philo, data))
-			break ;
 	}
 	free(philo);
 	return (NULL);
@@ -90,6 +88,7 @@ int main(int argc, char **argv)
 	free(rules->forks);
 	pthread_mutex_destroy(&rules->mutex);
 	pthread_mutex_destroy(&rules->mutex_print);
+	pthread_mutex_destroy(&rules->mutex_meals);
 	//free(rules->mutex);
 	//free(rules->mutex_print);
 	free(rules->t_philos);

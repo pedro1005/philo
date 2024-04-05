@@ -40,6 +40,7 @@ typedef struct t_rules
     pthread_mutex_t mutex_print;
     pthread_mutex_t *mutex_forks;
     pthread_mutex_t mutex_dead;
+    pthread_mutex_t mutex_meals;
     t_philo         **t_philos;
 } t_rules;
 

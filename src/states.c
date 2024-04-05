@@ -52,15 +52,15 @@ void	ft_eat(t_rules *rules, t_philo * philo)
 		if (ft_check_end(rules) || ft_check_philo_dead(philo, rules))
 			return ;
 	}
-	pthread_mutex_lock(&rules->mutex);
-	philo->n_meals++;
-	pthread_mutex_unlock(&rules->mutex);
-	ft_check_meals(rules);
 	pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
 	rules->forks[philo->fork_l_pos] = 1;
 	pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
 	pthread_mutex_lock(&rules->mutex_forks[philo->fork_r_pos]);
 	rules->forks[philo->fork_r_pos] = 1;
 	pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
+	pthread_mutex_lock(&rules->mutex_meals);
+	philo->n_meals++;
+	pthread_mutex_unlock(&rules->mutex_meals);
+	ft_check_meals(rules);
 	philo->forks_own = 0;
 }

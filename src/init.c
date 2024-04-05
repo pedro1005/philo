@@ -27,6 +27,7 @@ void	ft_set_rules(char **argv, t_rules *rules)
     rules->mutex_forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t) * rules->n_philos);
     pthread_mutex_init(&rules->mutex, NULL);
     pthread_mutex_init(&rules->mutex_print, NULL);
+    pthread_mutex_init(&rules->mutex_meals, NULL);
     while (--n_philos >= 0)
         pthread_mutex_init(&rules->mutex_forks[n_philos], NULL);
 }
