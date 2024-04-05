@@ -45,7 +45,7 @@ void	ft_parse_args(int argc, char **argv)
 
 int	ft_check_philo_dead(t_philo *philo, t_rules *rules)
 {
-	if (ft_current_time_ms(rules) >= philo->death_time)
+	if (ft_current_time_ms(rules) > philo->death_time)
 	{
 		if(!ft_check_end(rules))
 		{
@@ -65,48 +65,25 @@ void	ft_get_forks(t_philo *philo, t_rules *rules)
 	{
 		if (philo->id %2 == 0)
 		{
-			usleep(rules->time_to_eat * 1000);
+			if((ft_current_time_ms(rules) + rules->time_to_eat) < philo->death_time)
+				usleep(rules->time_to_eat * 100);
+			if (ft_check_philo_dead(philo, rules))
+				break ;
 			pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
-			if (rules->forks[philo->fork_l_pos])
-			{
-				pthread_mutex_lock(&rules->mutex_forks[philo->fork_r_pos]);
-				rules->forks[philo->fork_l_pos] = 0;
-				pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
-				ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
-				if(rules->forks[philo->fork_r_pos])
-				{
-					rules->forks[philo->fork_r_pos] = 0;
-					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
-					ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
-					philo->forks_own = 1;
-				}
-				else
-					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
-			}
-			else
-				pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
+			ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
+			if (ft_check_philo_dead(philo, rules))
+				break ;
+			pthread_mutex_lock(&rules->mutex_forks[philo->fork_r_pos]);
+			ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
+			philo->forks_own = 1;
 		}
 		else
 		{
 			pthread_mutex_lock(&rules->mutex_forks[philo->fork_r_pos]);
-			if (rules->forks[philo->fork_r_pos])
-			{
-				pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
-				rules->forks[philo->fork_r_pos] = 0;
-				pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
-				ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
-				if(rules->forks[philo->fork_l_pos])
-				{
-					rules->forks[philo->fork_l_pos] = 0;
-					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
-					ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
-					philo->forks_own = 1;
-				}
-				else
-					pthread_mutex_unlock(&rules->mutex_forks[philo->fork_l_pos]);
-			}
-			else
-				pthread_mutex_unlock(&rules->mutex_forks[philo->fork_r_pos]);
+			ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
+			pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
+			ft_print_message("has taken a fork", &rules->mutex_print, philo, rules);
+			philo->forks_own = 1;
 		}
 	}
 		/*pthread_mutex_lock(&rules->mutex_forks[philo->fork_l_pos]);
