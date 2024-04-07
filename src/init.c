@@ -89,12 +89,12 @@ void	ft_init_philo(t_philo *philo, t_rules *data)
 		philo->fork_r_pos = philo->id;
 }
 
-void	ft_parse_args(int argc, char **argv)
+int	ft_parse_args(int argc, char **argv)
 {
 	if (argc < 5 || argc > 6 || argv == NULL)
 	{
 		write(2, "Invalid args\n", 13);
-		exit(1);
+		return (0);
 	}
-	ft_check_numbers(argv);
+	return (ft_check_numbers(argv));
 }

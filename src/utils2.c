@@ -57,7 +57,7 @@ time_t	ft_current_time_ms(t_rules *rules)
 	return (current_time - rules->time_init);
 }
 
-void	ft_check_numbers(char **argv)
+int	ft_check_numbers(char **argv)
 {
 	int	i;
 	int	j;
@@ -71,11 +71,12 @@ void	ft_check_numbers(char **argv)
 			if (argv[i][j] > '9' || argv[i][j] < '0')
 			{
 				write(2, "Invalid args\n", 13);
-				exit(1);
+				return (0);
 			}
 			j++;
 		}
 		i++;
 		j = 0;
 	}
+	return (1);
 }

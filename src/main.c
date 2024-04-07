@@ -98,7 +98,8 @@ int	main(int argc, char **argv)
 {
 	t_rules	*rules;
 
-	ft_parse_args(argc, argv);
+	if (!ft_parse_args(argc, argv))
+		return (0);
 	rules = malloc(sizeof(t_rules));
 	memset(rules, 0, sizeof(t_rules));
 	ft_set_rules(argv, rules);
