@@ -10,8 +10,10 @@
 #                                                                              #
 # **************************************************************************** #
 
-CC = cc -pthread
-CFLAGS = -Wall -Wextra -Werror
+#run with flag -fsanitize=thread
+
+CC = cc
+CFLAGS = -Wall -Wextra -Werror -pthread
 
 NAME = philo
 
@@ -19,7 +21,7 @@ OBJ_PATH = objs
 HEADER = includes
 SRC_PATH = src
 
-SOURCES = main.c utils.c init.c states.c forks.c
+SOURCES = main.c utils.c utils2.c init.c states.c forks.c
 
 SRCS := $(addprefix $(SRC_PATH)/,$(SOURCES))
 OBJS := $(addprefix $(OBJ_PATH)/,$(SOURCES:.c=.o))

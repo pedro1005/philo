@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pedmonte <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/04/07 18:46:23 by pedmonte          #+#    #+#             */
+/*   Updated: 2024/04/07 18:46:27 by pedmonte         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/philos.h"
 
 /*                  ***RULES***
@@ -26,7 +38,7 @@ int	ft_check_end(t_rules *rules)
 	if (!rules)
 		return (1);
 	pthread_mutex_lock(&rules->mutex);
-	if (rules->stop_demo)
+	if (rules->stop_demo == 1)
 	{
 		pthread_mutex_unlock(&rules->mutex);
 		return (1);
@@ -35,20 +47,8 @@ int	ft_check_end(t_rules *rules)
 	return (0);
 }
 
-void	*ft_routine(t_rules *data)
+void	ft_sync_philos(t_rules *data)
 {
-	t_philo *philo;
-
-	philo = malloc(sizeof(t_philo));
-	memset(philo, 0, sizeof(t_philo));
-	pthread_mutex_lock(&data->mutex);
-	data->philo_created++;
-	philo->id = data->philo_created;
-	data->t_philos[philo->id - 1] = philo;
-	pthread_mutex_unlock(&data->mutex);
-	philo->fork_l_pos = philo->id - 1;
-	if (philo->id != data->n_philos)
-		philo->fork_r_pos = philo->id;
 	while (1)
 	{
 		pthread_mutex_lock(&data->mutex);
@@ -56,14 +56,33 @@ void	*ft_routine(t_rules *data)
 		{
 			pthread_mutex_unlock(&data->mutex);
 			break ;
-		}				                               //sync threads
+		}
 		else
 		{
 			pthread_mutex_unlock(&data->mutex);
 			usleep(10);
 		}
 	}
-	philo->death_time = ft_current_time_ms(data) + data->death_time;
+}
+
+void	*ft_routine(t_rules *data)
+{
+	t_philo	*philo;
+
+	philo = malloc(sizeof(t_philo));
+	memset(philo, 0, sizeof(t_philo));
+	ft_init_philo(philo, data);
+	ft_sync_philos(data);
+	if (data->n_philos == 1)
+	{
+		pthread_mutex_lock(&data->mutex_forks[philo->fork_l_pos]);
+		ft_print_message("has taken a fork", philo, data);
+		pthread_mutex_unlock(&data->mutex_forks[philo->fork_l_pos]);
+		while (!ft_check_philo_dead(philo, data))
+			usleep(100);
+		free(philo);
+		return (NULL);
+	}
 	while (!ft_check_end(data) && !ft_check_philo_dead(philo, data))
 	{
 		ft_get_forks(philo, data);
@@ -75,25 +94,21 @@ void	*ft_routine(t_rules *data)
 	return (NULL);
 }
 
-int main(int argc, char **argv)
+int	main(int argc, char **argv)
 {
-    t_rules	*rules;
+	t_rules	*rules;
 
 	ft_parse_args(argc, argv);
 	rules = malloc(sizeof(t_rules));
 	memset(rules, 0, sizeof(t_rules));
 	ft_set_rules(argv, rules);
-	//printf("n_meals = %ld\n", rules->n_meals);
 	ft_create_philos(rules);
-	free(rules->forks);
 	pthread_mutex_destroy(&rules->mutex);
 	pthread_mutex_destroy(&rules->mutex_print);
 	pthread_mutex_destroy(&rules->mutex_meals);
-	//free(rules->mutex);
-	//free(rules->mutex_print);
 	free(rules->t_philos);
 	free(rules->philos);
 	free(rules->mutex_forks);
 	free(rules);
-    return (0);
+	return (0);
 }
